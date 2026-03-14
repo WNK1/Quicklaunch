@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>QuickLaunch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --o1:#c85a00; --o2:#e06a10; --o3:#f07820;
+  --border:rgba(200,90,0,0.17);
+  --surf:rgba(255,255,255,0.026);
+  --surf2:rgba(255,255,255,0.042);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html,body{
+  width:860px; height:620px;
+  font-family:'DM Sans',sans-serif;
+  background:transparent; overflow:hidden;
+  -webkit-app-region:no-drag;
+}
+
+/* ── PANEL ── */
+#panel{
+  width:100%; height:100%;
+  background:rgba(10,7,3,0.91);
+  backdrop-filter:blur(50px) saturate(1.9) brightness(0.81);
+  border:1px solid var(--border);
+  border-radius:16px;
+  display:flex; flex-direction:column;
+  overflow:hidden; position:relative;
+  opacity:0; transform:translateY(20px) scale(0.965);
+  transition:opacity .28s ease, transform .28s cubic-bezier(.34,1.3,.64,1);
+  box-shadow:0 52px 110px rgba(0,0,0,0.82),0 0 0 1px rgba(255,255,255,0.03),inset 0 1px 0 rgba(255,140,40,0.08);
+}
+#panel.visible{opacity:1;transform:translateY(0) scale(1);}
+#panel::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(220,105,20,0.6),transparent);z-index:10;}
+#panel::after{content:'';position:absolute;inset:0;border-radius:16px;pointer-events:none;z-index:0;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ── HEADER ── */
+#header{
+  flex-shrink:0; display:flex; align-items:center;
+  padding:14px 20px 12px; gap:9px;
+  border-bottom:1px solid var(--border);
+  position:relative; z-index:2;
+}
+.logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,rgba(200,90,0,.35),rgba(240,120,32,.15));border:1px solid rgba(220,100,20,.35);display:flex;align-items:center;justify-content:center;font-size:13px;}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,200,130,.9);}
+.logo-sub{font-size:8px;color:rgba(200,150,80,.4);letter-spacing:.09em;}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:7px;}
+.hbadge{font-size:8px;color:rgba(200,130,60,.36);padding:2px 7px;border-radius:4px;border:1px solid rgba(200,90,0,.18);background:rgba(180,70,0,.07);}
+.icon-btn{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.28);transition:all .15s;}
+.icon-btn:hover{background:rgba(200,90,0,.14);border-color:rgba(200,90,0,.3);color:rgba(255,200,130,.8);}
+.icon-btn.gear-active{background:rgba(200,90,0,.22);border-color:rgba(220,110,20,.44);color:rgba(255,200,130,.9);}
+
+/* ── LAYOUT SWITCHER ── */
+.layout-sw{
+  display:flex; align-items:center;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:7px; padding:2px; gap:1px;
+}
+.lsw-btn{
+  width:24px; height:20px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:9px; color:rgba(200,150,80,.35);
+  transition:all .18s; position:relative;
+}
+.lsw-btn:hover{color:rgba(255,200,130,.6);}
+.lsw-btn.active{
+  background:rgba(200,90,0,.22);
+  color:rgba(255,200,130,.88);
+  box-shadow:0 0 8px rgba(180,70,0,.2);
+}
+.lsw-btn svg{width:12px;height:12px;opacity:.55;transition:opacity .18s;}
+.lsw-btn.active svg{opacity:1;}
+
+/* ── NAV TABS ── */
+#nav{
+  flex-shrink:0; display:flex; align-items:center;
+  padding:0 20px; border-bottom:1px solid var(--border);
+  position:relative; z-index:2; gap:0;
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+}
+#nav::-webkit-scrollbar{display:none;}
+.ntab{
+  display:flex; align-items:center; gap:6px;
+  padding:0 16px; height:36px; cursor:pointer;
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(240,180,100,.28);
+  border-bottom:2px solid transparent;
+  transition:color .18s,border-color .18s;
+  user-select:none; margin-bottom:-1px; flex-shrink:0;
+}
+.ntab:hover{color:rgba(255,210,150,.62);}
+.ntab.active{color:rgba(255,210,150,.92);border-bottom-color:rgba(220,110,20,.75);}
+.npip{width:4px;height:4px;border-radius:50%;background:var(--o2);box-shadow:0 0 5px var(--o2);flex-shrink:0;opacity:.55;transition:opacity .18s,box-shadow .18s;}
+.ntab.active .npip{opacity:1;box-shadow:0 0 7px var(--o3),0 0 14px rgba(240,120,32,.6);}
+.nc{font-size:8px;font-weight:400;color:rgba(200,140,60,.28);letter-spacing:.04em;}
+.ntab.active .nc{color:rgba(200,140,60,.55);}
+.nav-search{
+  margin-left:auto; flex-shrink:0;
+  display:flex; align-items:center; gap:6px;
+  padding:0 14px; height:36px; cursor:pointer;
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:rgba(240,236,230,.17);
+  border-bottom:2px solid transparent;
+  transition:color .18s,border-color .18s;
+  user-select:none; margin-bottom:-1px;
+}
+.nav-search:hover{color:rgba(240,236,230,.42);}
+.nav-search.active{color:rgba(255,210,150,.85);border-bottom-color:rgba(220,110,20,.55);}
+
+/* ── MAIN ── */
+#main{flex:1;overflow:hidden;position:relative;z-index:2;}
+
+/* ── GRID ── */
+#view-grid{
+  height:100%; overflow-y:auto; overflow-x:hidden;
+  padding:14px 20px 14px;
+  scrollbar-width:thin; scrollbar-color:rgba(200,90,0,.18) transparent;
+}
+#view-grid::-webkit-scrollbar{width:3px;}
+#view-grid::-webkit-scrollbar-thumb{background:rgba(200,100,20,.2);border-radius:2px;}
+
+.sec-lbl{
+  font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(200,130,60,.3);margin-bottom:9px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(200,90,0,.14),transparent);}
+
+.app-grid-6{
+  display:grid; grid-template-columns:repeat(6,1fr);
+  gap:7px; margin-bottom:14px;
+}
+
+.ag-item{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:10px 4px 8px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;background:var(--surf);
+  transition:all .16s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+}
+.ag-item::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 120% at 50% 120%,rgba(200,90,0,.15),transparent 60%);opacity:0;transition:opacity .16s;}
+.ag-item:hover{background:rgba(200,90,0,.1);border-color:rgba(200,90,0,.28);transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,0,0,.38),0 0 12px rgba(160,60,0,.1);}
+.ag-item:hover::before{opacity:1;}
+.ag-item:active{transform:scale(.93);opacity:.8;}
+.ag-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative;z-index:1;overflow:hidden;}
+.ag-icon img{width:100%;height:100%;object-fit:cover;border-radius:9px;}
+.ag-name{font-size:9px;font-weight:500;color:rgba(220,180,130,.5);text-align:center;line-height:1.2;transition:color .16s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;position:relative;z-index:1;}
+.ag-item:hover .ag-name{color:rgba(255,225,175,.92);}
+.sdot{position:absolute;top:5px;right:5px;width:4px;height:4px;border-radius:50%;opacity:.5;}
+.sdot.i{background:rgba(60,210,100,.75);box-shadow:0 0 4px rgba(60,200,100,.5);}
+.sdot.w{background:rgba(200,140,60,.42);}
+.ag-item:hover .sdot{opacity:1;}
+
+/* ── MOSAIC ── */
+#view-mosaic{
+  height:100%; overflow-y:auto; overflow-x:hidden;
+  padding:14px 20px 14px;
+  scrollbar-width:thin; scrollbar-color:rgba(200,90,0,.18) transparent;
+}
+#view-mosaic::-webkit-scrollbar{width:3px;}
+#view-mosaic::-webkit-scrollbar-thumb{background:rgba(200,100,20,.2);border-radius:2px;}
+.mosaic-section{margin-bottom:16px;}
+.mosaic-section:last-child{margin-bottom:0;}
+.mosaic-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-auto-rows:84px;
+  gap:6px;
+}
+.mc{
+  position:relative;border-radius:10px;cursor:pointer;overflow:hidden;
+  border:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.022);
+  transition:transform .17s cubic-bezier(.4,0,.2,1),box-shadow .17s,border-color .17s;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.mc.feat{grid-column:span 2;grid-row:span 2;}
+.mc-bg{position:absolute;inset:0;border-radius:inherit;}
+.mc-img{position:absolute;inset:0;border-radius:inherit;object-fit:cover;width:100%;height:100%;opacity:.92;}
+.mc-ico{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-58%);
+  font-size:28px;line-height:1;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));
+  transition:transform .2s cubic-bezier(.34,1.4,.64,1);
+  z-index:1;pointer-events:none;
+}
+.mc.feat .mc-ico{font-size:46px;transform:translate(-50%,-55%);}
+.mc-lbl{
+  position:relative;z-index:2;
+  padding:5px 7px 6px;
+  background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 100%);
+  display:flex;align-items:center;gap:5px;
+}
+.mc.feat .mc-lbl{padding:8px 10px 9px;}
+.mc-nm{font-size:8.5px;font-weight:500;color:rgba(255,225,175,.78);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;flex:1;}
+.mc.feat .mc-nm{font-size:11px;font-weight:600;}
+.mc-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
+.mc-dot.i{background:rgba(60,220,100,.72);box-shadow:0 0 4px rgba(60,200,100,.5);}
+.mc-dot.w{background:rgba(200,140,60,.44);}
+.mc:hover{
+  transform:scale(1.04) translateY(-2px);
+  border-color:rgba(220,110,20,.5);
+  box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 18px rgba(180,70,0,.14),inset 0 1px 0 rgba(255,160,60,.11);
+  z-index:5;
+}
+.mc:hover .mc-ico{transform:translate(-50%,-64%) scale(1.1);}
+.mc.feat:hover .mc-ico{transform:translate(-50%,-58%) scale(1.07);}
+.mc:active{transform:scale(.96);opacity:.82;}
+.mc-badge{
+  position:absolute;top:6px;right:6px;
+  font-size:7px;letter-spacing:.07em;text-transform:uppercase;
+  border-radius:4px;padding:2px 7px;z-index:10;
+  white-space:nowrap;font-weight:600;
+  transition:transform .15s, box-shadow .15s;
+  pointer-events:none;
+}
+.mc-badge.open{
+  color:rgba(80,220,120,.9);
+  background:rgba(20,80,40,.75);
+  border:1px solid rgba(60,200,100,.28);
+}
+.mc-badge.dl{
+  color:rgba(255,200,100,.92);
+  background:rgba(60,25,0,.82);
+  border:1px solid rgba(220,110,20,.38);
+  cursor:pointer;
+  pointer-events:auto;
+}
+.mc-badge.dl:hover{
+  transform:scale(1.08);
+  box-shadow:0 2px 10px rgba(200,90,0,.4);
+}
+
+/* ripple */
+@keyframes rpl{0%{transform:translate(-50%,-50%) scale(0);opacity:.4}100%{transform:translate(-50%,-50%) scale(3.5);opacity:0}}
+.rfx{position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(240,120,32,.3);pointer-events:none;transform:translate(-50%,-50%) scale(0);animation:rpl .5s ease-out forwards;z-index:20;}
+
+/* ── SEARCH ── */
+#view-search{
+  height:100%;display:flex;flex-direction:column;
+  padding:14px 20px 0;
+}
+.sbox{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(200,90,0,.22);border-radius:10px;padding:0 14px;height:40px;margin-bottom:12px;flex-shrink:0;transition:border-color .2s,box-shadow .2s;}
+.sbox:focus-within{border-color:rgba(220,110,20,.5);box-shadow:0 0 0 3px rgba(200,90,0,.08),0 0 18px rgba(180,70,0,.1);}
+.sico{font-size:13px;opacity:.38;flex-shrink:0;}
+#sinput{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,220,170,.92);caret-color:var(--o3);}
+#sinput::placeholder{color:rgba(200,150,80,.27);font-weight:300;}
+.sclr{font-size:11px;color:rgba(200,140,60,.28);cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s;flex-shrink:0;}
+.sclr:hover{color:rgba(255,200,130,.7);background:rgba(200,90,0,.1);}
+.sclr.h{opacity:0;pointer-events:none;}
+.smeta{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(200,130,60,.28);margin-bottom:8px;flex-shrink:0;display:flex;align-items:center;gap:7px;}
+.smeta::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(200,90,0,.1),transparent);}
+.ftag{padding:2px 7px;border-radius:3px;font-size:7.5px;cursor:pointer;border:1px solid rgba(200,90,0,.13);background:rgba(180,70,0,.06);color:rgba(200,140,60,.34);transition:all .15s;}
+.ftag.on{border-color:rgba(220,110,20,.36);background:rgba(180,70,0,.13);color:rgba(255,200,130,.7);}
+#sres{flex:1;overflow-y:auto;overflow-x:hidden;padding-right:2px;padding-bottom:8px;}
+#sres::-webkit-scrollbar{width:2px;}
+#sres::-webkit-scrollbar-thumb{background:rgba(200,100,20,.2);border-radius:2px;}
+.sresult{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;background:rgba(255,255,255,.02);transition:all .15s;margin-bottom:4px;position:relative;overflow:hidden;}
+.sresult::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 100% at 0% 50%,rgba(200,90,0,.1),transparent 60%);opacity:0;transition:opacity .15s;}
+.sresult:hover{background:rgba(200,90,0,.08);border-color:rgba(200,90,0,.22);transform:translateX(2px);}
+.sresult:hover::before{opacity:1;}
+.sresult:active{transform:scale(.98);opacity:.85;}
+.sr-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sr-inf{flex:1;min-width:0;}
+.sr-nm{font-size:12px;font-weight:500;color:rgba(255,220,170,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-sb{font-size:8.5px;color:rgba(200,150,80,.33);letter-spacing:.03em;margin-top:1px;}
+.srbadge{flex-shrink:0;font-size:7px;padding:2px 6px;border-radius:3px;border:1px solid;letter-spacing:.05em;text-transform:uppercase;font-weight:500;}
+.srbadge.ins{border-color:rgba(60,200,100,.2);background:rgba(40,160,80,.08);color:rgba(80,210,120,.6);}
+.srbadge.win{border-color:rgba(100,160,255,.15);background:rgba(60,120,220,.06);color:rgba(120,180,255,.5);}
+.srbadge.web{border-color:rgba(200,140,60,.18);background:rgba(180,100,20,.06);color:rgba(220,160,80,.5);}
+mark{background:transparent;color:rgba(255,175,80,.9);font-weight:600;}
+.sempty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;gap:9px;color:rgba(200,140,60,.22);font-size:11px;letter-spacing:.06em;}
+.sempty .big{font-size:28px;opacity:.2;}
+
+/* ── FOOTER ── */
+#footer{
+  flex-shrink:0;display:flex;align-items:center;
+  padding:9px 20px 13px;gap:10px;
+  border-top:1px solid var(--border);
+  position:relative;z-index:2;
+}
+.fhint{font-size:8.5px;letter-spacing:.05em;color:rgba(200,130,60,.24);flex:1;}
+.fhint b{color:rgba(230,155,70,.42);}
+
+/* ── TOAST ── */
+#toast{
+  position:absolute;bottom:60px;left:50%;
+  transform:translateX(-50%) translateY(5px);
+  background:rgba(10,6,2,.94);border:1px solid rgba(200,90,0,.3);
+  color:rgba(255,205,135,.92);font-size:10px;letter-spacing:.06em;
+  padding:5px 15px;border-radius:7px;backdrop-filter:blur(20px);
+  opacity:0;pointer-events:none;white-space:nowrap;
+  transition:opacity .2s,transform .2s;z-index:300;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── SETTINGS OVERLAY ── */
+#view-settings{
+  position:absolute;inset:0;display:flex;overflow:hidden;
+  background:rgba(8,5,2,.82);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transform:translateX(14px);
+  transition:opacity .22s ease,transform .22s ease;z-index:50;
+}
+#view-settings.open{opacity:1;pointer-events:all;transform:translateX(0);}
+.st-sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:rgba(10,6,2,.55);}
+.st-sb-hdr{padding:12px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,200,130,.46);display:flex;align-items:center;gap:7px;}
+.st-sb-hdr::before{content:'⚙';font-size:11px;}
+.st-sec-list{flex:1;overflow-y:auto;padding:7px;scrollbar-width:thin;scrollbar-color:rgba(200,90,0,.12) transparent;}
+.st-sec-list::-webkit-scrollbar{width:2px;}
+.st-sec-list::-webkit-scrollbar-thumb{background:rgba(200,100,20,.18);border-radius:2px;}
+.sec-row{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .15s;margin-bottom:3px;}
+.sec-row:hover{background:var(--surf2);border-color:rgba(200,90,0,.14);}
+.sec-row.active{background:rgba(200,90,0,.12);border-color:rgba(200,90,0,.28);}
+.sec-row-icon{font-size:13px;flex-shrink:0;}
+.sec-row-nm{flex:1;font-size:11px;font-weight:500;color:rgba(220,175,115,.68);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sec-row.active .sec-row-nm{color:rgba(255,215,150,.9);}
+.sec-row-cnt{font-size:8px;color:rgba(200,140,60,.28);flex-shrink:0;}
+.sec-row-del{width:16px;height:16px;border-radius:3px;display:none;align-items:center;justify-content:center;font-size:9px;color:rgba(255,100,80,.38);cursor:pointer;transition:all .15s;flex-shrink:0;}
+.sec-row:hover .sec-row-del{display:flex;}
+.sec-row-del:hover{background:rgba(255,60,40,.12);color:rgba(255,100,80,.82);}
+.st-add-sec{margin:5px 7px 8px;padding:8px 10px;border-radius:8px;border:1px dashed rgba(200,90,0,.2);background:rgba(180,70,0,.04);cursor:pointer;font-size:10px;color:rgba(200,130,60,.38);display:flex;align-items:center;gap:7px;transition:all .18s;text-align:left;font-family:'DM Sans',sans-serif;}
+.st-add-sec:hover{border-color:rgba(220,110,20,.36);background:rgba(180,70,0,.09);color:rgba(255,180,80,.7);}
+.st-add-sec::before{content:'＋';font-size:13px;}
+.st-content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.st-con-hdr{padding:11px 15px 9px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:8px;}
+.st-con-title{font-family:'Syne',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,200,130,.58);flex:1;}
+.st-small-btn{font-size:8px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid rgba(200,90,0,.18);background:rgba(180,70,0,.06);color:rgba(200,140,60,.48);transition:all .15s;}
+.st-small-btn:hover{border-color:rgba(220,110,20,.34);background:rgba(180,70,0,.12);color:rgba(255,180,80,.8);}
+.st-add-app-btn{font-size:8px;padding:3px 9px;border-radius:4px;cursor:pointer;border:1px solid rgba(200,90,0,.24);background:rgba(180,70,0,.1);color:rgba(255,180,80,.62);transition:all .15s;display:flex;align-items:center;gap:4px;}
+.st-add-app-btn:hover{border-color:rgba(220,110,20,.44);background:rgba(180,70,0,.18);color:rgba(255,210,130,.9);}
+.st-add-app-btn::before{content:'＋';}
+.st-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:rgba(200,140,60,.18);font-size:11px;letter-spacing:.06em;}
+.st-empty .big{font-size:36px;opacity:.12;}
+.st-apps-list{flex:1;overflow-y:auto;padding:8px 12px;scrollbar-width:thin;scrollbar-color:rgba(200,90,0,.12) transparent;}
+.st-apps-list::-webkit-scrollbar{width:2px;}
+.st-apps-list::-webkit-scrollbar-thumb{background:rgba(200,100,20,.18);border-radius:2px;}
+.app-edit-row{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;border:1px solid transparent;background:var(--surf);margin-bottom:4px;transition:border-color .15s,background .15s,opacity .15s;cursor:default;user-select:none;position:relative;}
+.app-edit-row.dragging *{pointer-events:none;}
+.app-edit-row:hover{background:var(--surf2);border-color:rgba(200,90,0,.14);}
+.app-edit-row.drag-over{border-color:rgba(220,110,20,.6);background:rgba(200,90,0,.1);box-shadow:0 0 0 1px rgba(220,110,20,.3);}
+.app-edit-row.dragging{opacity:.35;border-color:rgba(200,90,0,.2);}
+.drag-handle{display:flex;align-items:center;justify-content:center;width:14px;flex-shrink:0;cursor:grab;opacity:.22;transition:opacity .15s;font-size:11px;letter-spacing:-1px;color:rgba(200,150,80,1);}
+.app-edit-row:hover .drag-handle{opacity:.55;}
+.drag-handle:active{cursor:grabbing;}
+.ae-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;flex-shrink:0;border:1px solid rgba(255,255,255,.06);overflow:hidden;}
+.ae-ico img{width:100%;height:100%;object-fit:cover;}
+.ae-inf{flex:1;min-width:0;}
+.ae-name{font-size:11px;font-weight:500;color:rgba(220,175,115,.68);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ae-path{font-size:8px;color:rgba(200,140,60,.26);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ae-btns{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.ae-btn{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;border:1px solid rgba(255,255,255,.06);background:transparent;color:rgba(200,140,60,.3);transition:all .15s;}
+.ae-btn:hover{background:rgba(200,90,0,.1);border-color:rgba(200,90,0,.24);color:rgba(255,180,80,.8);}
+.ae-btn.del:hover{background:rgba(255,50,30,.1);border-color:rgba(255,60,40,.2);color:rgba(255,100,80,.82);}
+.st-editor{flex-shrink:0;border-top:1px solid var(--border);background:rgba(14,9,4,.65);padding:12px 14px 13px;display:none;}
+.st-editor.open{display:block;}
+.ed-title{font-family:'Syne',sans-serif;font-weight:700;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(200,140,60,.44);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.ed-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(200,90,0,.14),transparent);}
+.ed-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.ed-emoji-prev{width:46px;height:46px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:1px solid rgba(200,90,0,.24);background:rgba(180,70,0,.08);transition:border-color .15s,box-shadow .15s;overflow:hidden;position:relative;}
+.ed-emoji-prev:hover{border-color:rgba(220,110,20,.44);box-shadow:0 0 12px rgba(180,70,0,.2);}
+.ed-fields{flex:1;display:flex;flex-direction:column;gap:6px;}
+.ed-inp{width:100%;background:rgba(255,255,255,.034);border:1px solid rgba(200,90,0,.14);border-radius:6px;padding:5px 9px;font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,220,170,.85);outline:none;transition:border-color .15s,box-shadow .15s;}
+.ed-inp:focus{border-color:rgba(220,110,20,.4);box-shadow:0 0 0 2px rgba(200,90,0,.07);}
+.ed-inp::placeholder{color:rgba(200,140,60,.2);}
+.ed-row2{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.color-lbl{font-size:8px;color:rgba(200,140,60,.32);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0;width:40px;}
+.color-swatches{display:flex;gap:4px;flex-wrap:wrap;}
+.csw{width:18px;height:18px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0;}
+.csw:hover{transform:scale(1.18);}
+.csw.sel{border-color:rgba(255,255,255,.65);box-shadow:0 0 7px rgba(255,255,255,.18);}
+.ed-actions{display:flex;align-items:center;gap:7px;justify-content:flex-end;}
+.ed-btn{padding:5px 13px;border-radius:6px;font-size:10px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid;font-family:'DM Sans',sans-serif;}
+.ed-btn.cancel{border-color:rgba(255,255,255,.08);background:transparent;color:rgba(200,150,80,.38);}
+.ed-btn.cancel:hover{background:rgba(255,255,255,.04);color:rgba(200,150,80,.7);}
+.ed-btn.save{border-color:rgba(200,90,0,.34);background:rgba(180,70,0,.17);color:rgba(255,185,90,.82);}
+.ed-btn.save:hover{background:rgba(200,90,0,.26);border-color:rgba(220,110,20,.52);color:rgba(255,215,130,.95);}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .2s ease forwards;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="panel">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="logo-mark">🟠</div>
+    <div>
+      <div class="logo-text">QuickLaunch</div>
+      <div class="logo-sub">App launcher</div>
+    </div>
+    <div class="hdr-right">
+      <div class="layout-sw" title="Переключить раскладку">
+        <div class="lsw-btn" id="lsw-grid" onclick="setLayout('grid')" title="Сетка">
+          <svg viewBox="0 0 12 12" fill="none"><rect x=".5" y=".5" width="4.5" height="4.5" rx="1" fill="currentColor"/><rect x="7" y=".5" width="4.5" height="4.5" rx="1" fill="currentColor"/><rect x=".5" y="7" width="4.5" height="4.5" rx="1" fill="currentColor"/><rect x="7" y="7" width="4.5" height="4.5" rx="1" fill="currentColor"/></svg>
+        </div>
+        <div class="lsw-btn" id="lsw-mosaic" onclick="setLayout('mosaic')" title="Мозаика">
+          <svg viewBox="0 0 12 12" fill="none"><rect x=".5" y=".5" width="6" height="6" rx="1" fill="currentColor"/><rect x="8" y=".5" width="3.5" height="3" rx="1" fill="currentColor"/><rect x="8" y="4.5" width="3.5" height="2" rx="1" fill="currentColor"/><rect x=".5" y="8" width="3.5" height="3.5" rx="1" fill="currentColor"/><rect x="5" y="8" width="6.5" height="3.5" rx="1" fill="currentColor"/></svg>
+        </div>
+      </div>
+      <div class="hbadge">Win+Q</div>
+      <div class="icon-btn" id="gearBtn" onclick="toggleSettings()" title="Настройки">⚙</div>
+      <div class="icon-btn" onclick="closePanel()" title="Закрыть (Esc)">✕</div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav" id="navBar"></div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="view-grid"></div>
+    <div id="view-mosaic" style="display:none;"></div>
+    <div id="view-search" style="display:none;">
+      <div class="sbox">
+        <span class="sico">⌕</span>
+        <input id="sinput" type="text" placeholder="Начни вводить название приложения…" autocomplete="off" spellcheck="false">
+        <span class="sclr h" id="sclr" onclick="clearSearch()">✕</span>
+      </div>
+      <div class="smeta" id="smeta" style="display:none;">
+        <span id="scnt">0 результатов</span>
+        <span class="ftag on" id="ftl" onclick="ftoggle('l')">Лаунчер</span>
+        <span class="ftag on" id="ftw" onclick="ftoggle('w')">Windows</span>
+      </div>
+      <div id="sres"><div class="sempty"><span class="big">⌕</span>Поиск по всем приложениям Windows</div></div>
+    </div>
+
+    <!-- SETTINGS OVERLAY -->
+    <div id="view-settings">
+      <div class="st-sidebar">
+        <div class="st-sb-hdr">Разделы</div>
+        <div class="st-sec-list" id="stSidebar"></div>
+        <button class="st-add-sec" onclick="addSection()">Новый раздел</button>
+      </div>
+      <div class="st-content">
+        <div class="st-con-hdr" id="stConHdr">
+          <div class="st-con-title" id="stConTitle">Выбери раздел</div>
+        </div>
+        <div class="st-apps-list" id="stAppsList"></div>
+        <div class="st-editor" id="stEditor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer">
+    <div class="fhint" id="fhint"><b>●</b> установлен &nbsp;·&nbsp; <b style="color:rgba(200,140,60,.38)">●</b> откроет сайт загрузки</div>
+    <div class="hbadge" style="opacity:.28">Esc — скрыть</div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+// ─── COLOUR PALETTE ───────────────────────────────────────────────────────────
+const CP = [
+  {c:'rgba(30,215,96,.15)',  g:'linear-gradient(135deg,#0a2a14,#1a5c2a)', sw:'#1ed760'},
+  {c:'rgba(255,0,0,.13)',    g:'linear-gradient(135deg,#2a0505,#5c0a0a)', sw:'#ff4444'},
+  {c:'rgba(229,9,20,.13)',   g:'linear-gradient(135deg,#2a0000,#620000)', sw:'#e50914'},
+  {c:'rgba(88,101,242,.15)', g:'linear-gradient(135deg,#0a0a2e,#1a1a60)', sw:'#5865f2'},
+  {c:'rgba(38,165,228,.13)', g:'linear-gradient(135deg,#001a2e,#003d6b)', sw:'#26a5e4'},
+  {c:'rgba(0,119,255,.13)',  g:'linear-gradient(135deg,#001433,#002e6b)', sw:'#0077ff'},
+  {c:'rgba(145,70,255,.14)', g:'linear-gradient(135deg,#16002a,#360060)', sw:'#9146ff'},
+  {c:'rgba(255,85,0,.13)',   g:'linear-gradient(135deg,#2a1000,#6b2800)', sw:'#ff5500'},
+  {c:'rgba(27,40,56,.4)',    g:'linear-gradient(135deg,#091420,#122840)', sw:'#4a6fa5'},
+  {c:'rgba(45,99,215,.15)',  g:'linear-gradient(135deg,#050a2a,#0d1860)', sw:'#2d63d7'},
+  {c:'rgba(0,122,204,.15)',  g:'linear-gradient(135deg,#001428,#00285c)', sw:'#007acc'},
+  {c:'rgba(162,89,255,.15)', g:'linear-gradient(135deg,#18002a,#380060)', sw:'#a259ff'},
+];
+
+// ─── DEFAULT SECTIONS ─────────────────────────────────────────────────────────
+const DEFAULTS = [
+  { id:'chill', label:'Chill', icon:'🎵', apps:[
+    {key:'spotify',    n:'Spotify',     e:'🎵', c:'rgba(30,215,96,.15)',  g:'linear-gradient(135deg,#0a2a14,#1a5c2a)'},
+    {key:'youtube',    n:'YouTube',     e:'▶️', c:'rgba(255,0,0,.13)',    g:'linear-gradient(135deg,#2a0505,#5c0a0a)'},
+    {key:'netflix',    n:'Netflix',     e:'🎬', c:'rgba(229,9,20,.13)',   g:'linear-gradient(135deg,#2a0000,#620000)'},
+    {key:'discord',    n:'Discord',     e:'💬', c:'rgba(88,101,242,.15)', g:'linear-gradient(135deg,#0a0a2e,#1a1a60)'},
+    {key:'telegram',   n:'Telegram',    e:'✈️', c:'rgba(38,165,228,.13)', g:'linear-gradient(135deg,#001a2e,#003d6b)'},
+    {key:'vk',         n:'VK',          e:'🌐', c:'rgba(0,119,255,.13)',  g:'linear-gradient(135deg,#001433,#002e6b)'},
+    {key:'twitch',     n:'Twitch',      e:'📺', c:'rgba(145,70,255,.14)', g:'linear-gradient(135deg,#16002a,#360060)'},
+    {key:'applemusic', n:'Apple Music', e:'🎼', c:'rgba(252,60,68,.13)',  g:'linear-gradient(135deg,#2a0008,#60001a)'},
+    {key:'soundcloud', n:'SoundCloud',  e:'☁️', c:'rgba(255,85,0,.13)',   g:'linear-gradient(135deg,#2a1000,#6b2800)'},
+  ]},
+  { id:'game', label:'Game', icon:'🎮', apps:[
+    {key:'steam',     n:'Steam',      e:'🎮', c:'rgba(27,40,56,.4)',    g:'linear-gradient(135deg,#091420,#122840)'},
+    {key:'epic',      n:'Epic Games', e:'⚡', c:'rgba(45,99,215,.15)',  g:'linear-gradient(135deg,#050a2a,#0d1860)'},
+    {key:'gog',       n:'GOG Galaxy', e:'🌌', c:'rgba(90,62,138,.16)', g:'linear-gradient(135deg,#120824,#280a50)'},
+    {key:'battlenet', n:'Battle.net', e:'🔵', c:'rgba(0,180,255,.13)', g:'linear-gradient(135deg,#001a33,#003d70)'},
+    {key:'minecraft', n:'Minecraft',  e:'⛏️', c:'rgba(90,140,59,.15)', g:'linear-gradient(135deg,#0a1a00,#1a3a00)'},
+    {key:'roblox',    n:'Roblox',     e:'🧱', c:'rgba(232,71,42,.14)', g:'linear-gradient(135deg,#2a0800,#601200)'},
+    {key:'ubisoft',   n:'Ubisoft',    e:'🎯', c:'rgba(17,105,184,.15)',g:'linear-gradient(135deg,#001a3a,#003080)'},
+    {key:'ea',        n:'EA App',     e:'🏆', c:'rgba(241,101,36,.14)',g:'linear-gradient(135deg,#1a0c00,#3d1a00)'},
+    {key:'xbox',      n:'Xbox',       e:'🎲', c:'rgba(16,124,16,.15)', g:'linear-gradient(135deg,#001a00,#003300)'},
+  ]},
+  { id:'code', label:'Code', icon:'💻', apps:[
+    {key:'vscode',   n:'VS Code',  e:'💙', c:'rgba(0,122,204,.15)',   g:'linear-gradient(135deg,#001428,#00285c)'},
+    {key:'terminal', n:'Terminal', e:'⬛', c:'rgba(20,20,20,.45)',    g:'linear-gradient(135deg,#080808,#161616)'},
+    {key:'github',   n:'GitHub',   e:'🐙', c:'rgba(36,41,47,.4)',     g:'linear-gradient(135deg,#0a0a0a,#1a1a1a)'},
+    {key:'figma',    n:'Figma',    e:'🎨', c:'rgba(162,89,255,.15)',  g:'linear-gradient(135deg,#18002a,#380060)'},
+    {key:'postman',  n:'Postman',  e:'🚀', c:'rgba(255,108,55,.15)',  g:'linear-gradient(135deg,#2a0e00,#601f00)'},
+    {key:'dbeaver',  n:'DBeaver',  e:'🐦', c:'rgba(59,123,191,.15)', g:'linear-gradient(135deg,#001a30,#003360)'},
+    {key:'cursor',   n:'Cursor',   e:'✏️', c:'rgba(124,58,237,.15)',  g:'linear-gradient(135deg,#100028,#240060)'},
+    {key:'notion',   n:'Notion',   e:'📝', c:'rgba(25,25,25,.4)',     g:'linear-gradient(135deg,#0d0d0d,#1c1c1c)'},
+    {key:'obsidian', n:'Obsidian', e:'💎', c:'rgba(124,92,191,.15)',  g:'linear-gradient(135deg,#0d0024,#1a0050)'},
+  ]},
+];
+
+const KNOWN_KEYS = new Set(['spotify','youtube','netflix','discord','telegram','vk','twitch',
+  'applemusic','soundcloud','steam','epic','gog','battlenet','minecraft','roblox',
+  'ubisoft','ea','xbox','vscode','terminal','github','figma','postman','dbeaver',
+  'cursor','notion','obsidian']);
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let sections = [], installed = {}, layout = 'grid', curTab = '';
+let tagL=true, tagW=true, stimer=null, lastQ='', lastRes=[];
+let settingsOpen=false, stSelSec=null, editorMode=null;
+let launches = {};          // key → count, most-used first in mosaic
+
+function load(){
+  try{ sections=JSON.parse(localStorage.getItem('ql-sections'))||[]; }catch{ sections=[]; }
+  if(!sections.length) sections=JSON.parse(JSON.stringify(DEFAULTS));
+  try{ launches=JSON.parse(localStorage.getItem('ql-launches'))||{}; }catch{ launches={}; }
+  layout=localStorage.getItem('ql-layout')||'grid';
+}
+function save(){ localStorage.setItem('ql-sections',JSON.stringify(sections)); }
+function saveLaunches(){ localStorage.setItem('ql-launches',JSON.stringify(launches)); }
+function trackLaunch(key){ launches[key]=(launches[key]||0)+1; saveLaunches(); }
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function hl(txt,q){
+  if(!q) return esc(txt);
+  const re=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+  return esc(txt).replace(re,'<mark>$1</mark>');
+}
+
+function boot(){
+  load();
+  setLayout(layout, true);   // восстановить состояние кнопок, рендер будет после switchTab
+  rebuildTabs();
+  if(sections[0]) switchTab(sections[0].id, null);
+  if(window.ql){
+    window.ql.checkInstalled().then(r=>{ installed=r||{}; if(curTab&&curTab!=='search')renderContent(); }).catch(()=>{});
+  }
+}
+
+// ─── LAYOUT ──────────────────────────────────────────────────────────────────
+function setLayout(l, skipRender){
+  layout=l;
+  localStorage.setItem('ql-layout', l);    // всегда сохраняем
+  const g=document.getElementById('lsw-grid');
+  const m=document.getElementById('lsw-mosaic');
+  if(g) g.classList.toggle('active', l==='grid');
+  if(m) m.classList.toggle('active', l==='mosaic');
+  const vg=document.getElementById('view-grid');
+  const vm=document.getElementById('view-mosaic');
+  if(vg) vg.style.display = l==='grid'?'':'none';
+  if(vm) vm.style.display = l==='mosaic'?'':'none';
+  if(!skipRender && curTab && curTab!=='search') renderContent();
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function rebuildTabs(){
+  const nav=document.getElementById('nav');
+  let h='';
+  sections.forEach(sec=>{
+    h+=`<div class="ntab" id="nav-${sec.id}" onclick="switchTab('${sec.id}',this)">
+      <span class="npip"></span>${esc(sec.label)}<span class="nc">${sec.apps.length}</span></div>`;
+  });
+  h+=`<div class="nav-search" id="nav-search" onclick="switchTab('search',this)"><span style="font-size:12px;opacity:.65">⌕</span>Поиск</div>`;
+  nav.innerHTML=h;
+}
+
+function switchTab(id, el){
+  curTab=id;
+  document.querySelectorAll('.ntab,.nav-search').forEach(t=>t.classList.remove('active'));
+  const target=document.getElementById('nav-'+id)||el;
+  if(target) target.classList.add('active');
+  const isSearch=id==='search';
+  document.getElementById('view-search').style.display=isSearch?'':'none';
+  // Используем актуальное значение layout (защита от рассинхрона)
+  const curLayout=layout||localStorage.getItem('ql-layout')||'grid';
+  document.getElementById('view-grid').style.display=(!isSearch&&curLayout==='grid')?'':'none';
+  document.getElementById('view-mosaic').style.display=(!isSearch&&curLayout==='mosaic')?'':'none';
+  if(!isSearch) renderContent();
+}
+
+function renderContent(){
+  const sec=sections.find(s=>s.id===curTab);
+  if(!sec) return;
+  if(layout==='grid') renderGrid(sec);
+  else renderMosaic(sec);
+}
+
+// ─── GRID ─────────────────────────────────────────────────────────────────────
+function renderGrid(sec){
+  const wrap=document.getElementById('view-grid');
+  let h=`<div class="sec-lbl">${esc(sec.label)} — ${sec.apps.length} приложений</div><div class="app-grid-6">`;
+  h+=sec.apps.map(a=>{
+    const s=installed[a.key]||'web';
+    const ico=a.imgUrl?`<img src="${a.imgUrl}" alt="${esc(a.n)}">`:(a.e||'📦');
+    return `<div class="ag-item" onclick="launchKey('${esc(a.key)}','${esc(a.n)}',event)" title="${esc(a.n)}">
+      <div class="sdot ${s==='installed'?'i':'w'}"></div>
+      <div class="ag-icon" style="${a.imgUrl?'background:transparent':'background:'+a.c}">${ico}</div>
+      <span class="ag-name">${esc(a.n)}</span></div>`;
+  }).join('');
+  h+=`</div>`;
+  wrap.innerHTML=`<div class="fade-in">${h}</div>`; wrap.scrollTop=0;
+}
+
+// ─── MOSAIC ───────────────────────────────────────────────────────────────────
+function renderMosaic(sec){
+  const wrap=document.getElementById('view-mosaic');
+  if(!sec.apps.length){
+    wrap.innerHTML=`<div class="fade-in"><div class="sempty"><span class="big">📭</span>Раздел пуст</div></div>`;
+    wrap.scrollTop=0; return;
+  }
+  // Sort by usage count desc; index 0 = most-used = featured card
+  const sorted=[...sec.apps].sort((a,b)=>(launches[b.key]||0)-(launches[a.key]||0));
+  const cards=sorted.map((a,i)=>{
+    const s=installed[a.key]||'web';
+    const tip=s==='installed'?'Запустить':'Загрузить';
+    const feat=i===0;
+    const imgL=a.imgUrl?`<img class="mc-img" src="${a.imgUrl}" alt="${esc(a.n)}">`:'';    const bgL=a.imgUrl?'':`<div class="mc-bg" style="background:${a.g};opacity:.95;"></div>`;
+    const icoL=a.imgUrl?'':`<div class="mc-ico">${a.e||'📦'}</div>`;
+    const badgeHtml = s==='installed'
+      ? `<div class="mc-badge open">Открыть</div>`
+      : `<div class="mc-badge dl" onclick="downloadApp(event,'${esc(a.n)}')" title="Найти и скачать">Загрузить ↗</div>`;
+    return `<div class="mc${feat?' feat':''}" onclick="launchKey('${esc(a.key)}','${esc(a.n)}',event)">
+      ${bgL}${imgL}${icoL}${badgeHtml}
+      <div class="mc-lbl"><div class="mc-dot ${s==='installed'?'i':'w'}"></div><div class="mc-nm">${esc(a.n)}</div></div></div>`;
+  }).join('');
+  wrap.innerHTML=`<div class="fade-in"><div class="mosaic-grid">${cards}</div></div>`; wrap.scrollTop=0;
+}
+
+// ─── LAUNCH ───────────────────────────────────────────────────────────────────
+function ripple(el,ev){
+  const r=document.createElement('div'); r.className='rfx';
+  const rect=el.getBoundingClientRect();
+  r.style.left=(ev.clientX-rect.left)+'px'; r.style.top=(ev.clientY-rect.top)+'px';
+  el.appendChild(r); setTimeout(()=>r.remove(),500);
+}
+
+function downloadApp(ev, name){
+  ev.stopPropagation();
+  const q=encodeURIComponent(name+' download');
+  const url='https://www.google.com/search?q='+q;
+  if(window.ql) window.ql.openUrl(url);
+  else window.open(url,'_blank');
+  toast(`↗ Поиск: ${name} download`);
+}
+
+async function launchKey(key,name,ev){
+  if(ev) ripple(ev.currentTarget,ev);
+  trackLaunch(key);
+  if(!window.ql){ toast('⚠ Запустите через Electron'); return; }
+  let appData=null;
+  for(const sec of sections){ const a=sec.apps.find(x=>x.key===key); if(a){ appData=a; break; } }
+  if(appData&&appData.exePath){
+    toast(`Открываю ${name}…`);
+    const res=await window.ql.launchExe(appData.exePath);
+    if(res.ok){ toast(`✓ ${name} запущен`); return; }
+    if(appData.website){ toast('⚠ exe не найден, открываю сайт…'); await window.ql.openUrl(appData.website); return; }
+    toast(`✗ ${res.msg||'Ошибка запуска'}`); return;
+  }
+  if(KNOWN_KEYS.has(key)){
+    toast(`Открываю ${name}…`);
+    const res=await window.ql.launch(key);
+    toast(res.web?`↗ Сайт загрузки — ${name}`:res.ok?`✓ ${name} запущен`:`✗ ${res.msg||'Ошибка'}`); return;
+  }
+  if(appData&&appData.website){
+    toast(`Открываю ${name}…`);
+    await window.ql.openUrl(appData.website);
+    toast(`↗ Открыто — ${name}`); return;
+  }
+  toast(`⚠ Нет пути к exe и URL для «${name}»`);
+}
+
+async function launchWin(p,t,n,ev){
+  if(ev) ripple(ev.currentTarget,ev);
+  if(!window.ql){ toast('⚠ Electron нужен'); return; }
+  toast(`Открываю ${n}…`);
+  const res=await window.ql.launchWinApp(p,t);
+  toast(res.ok?`✓ ${n} запущен`:'✗ Ошибка запуска');
+}
+
+// ─── SEARCH ───────────────────────────────────────────────────────────────────
+document.getElementById('sinput').addEventListener('input',function(){
+  const q=this.value.trim();
+  document.getElementById('sclr').classList.toggle('h',!q);
+  clearTimeout(stimer);
+  if(!q){ lastQ=''; document.getElementById('smeta').style.display='none'; document.getElementById('sres').innerHTML='<div class="sempty"><span class="big">⌕</span>Поиск по всем приложениям Windows</div>'; return; }
+  document.getElementById('sres').innerHTML='<div class="sempty"><div style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(200,90,0,.15);border-top-color:rgba(220,110,20,.5);animation:spin .8s linear infinite;"></div>Ищу…</div>';
+  stimer=setTimeout(()=>doSearch(q),200);
+});
+
+function clearSearch(){ document.getElementById('sinput').value=''; document.getElementById('sclr').classList.add('h'); document.getElementById('smeta').style.display='none'; document.getElementById('sres').innerHTML='<div class="sempty"><span class="big">⌕</span>Поиск по всем приложениям Windows</div>'; lastQ=''; document.getElementById('sinput').focus(); }
+
+async function doSearch(q){
+  lastQ=q; let res=[];
+  if(window.ql){ try{ res=await window.ql.searchApps(q); }catch{} }
+  else{ const all=sections.flatMap(sec=>sec.apps.map(a=>({...a,secLabel:sec.label,isLauncher:true,installed:true}))); res=all.filter(a=>a.n.toLowerCase().includes(q.toLowerCase())); }
+  lastRes=res; renderSRes(res,q);
+}
+
+function ftoggle(t){
+  if(t==='l'){ tagL=!tagL; document.getElementById('ftl').classList.toggle('on',tagL); }
+  else { tagW=!tagW; document.getElementById('ftw').classList.toggle('on',tagW); }
+  renderSRes(lastRes,lastQ);
+}
+
+function renderSRes(res,q){
+  const f=res.filter(r=>(r.isLauncher&&tagL)||(!r.isLauncher&&tagW));
+  document.getElementById('smeta').style.display='flex';
+  document.getElementById('scnt').textContent=f.length+' результатов';
+  if(!f.length){ document.getElementById('sres').innerHTML='<div class="sempty"><span class="big" style="opacity:.14">○</span>Ничего не найдено</div>'; return; }
+  document.getElementById('sres').innerHTML=f.map(r=>{
+    const isWin=!r.isLauncher;
+    const badge=isWin?`<span class="srbadge win">Windows</span>`:r.installed?`<span class="srbadge ins">Установлен</span>`:`<span class="srbadge web">Загрузить</span>`;
+    const sub=isWin?`Start Menu · Windows`:`QuickLaunch · ${r.secLabel||r.cat||''}`;
+    let onclick='';
+    if(r.isLauncher&&r.key) onclick=`launchKey('${r.key}','${(r.n||'').replace(/'/g,"\\'")}',event)`;
+    else if(isWin&&r.winPath){ const p=(r.winPath||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); onclick=`launchWin('${p}','${r.winType}','${(r.n||'').replace(/'/g,"\\'")}',event)`; }
+    return `<div class="sresult" ${onclick?`onclick="${onclick}"`:'style="opacity:.5;cursor:default;"'}>
+      <div class="sr-ico" style="background:${r.c||'rgba(255,255,255,.04)'}">${r.e||'🖥️'}</div>
+      <div class="sr-inf"><div class="sr-nm">${hl(r.n||'',q)}</div><div class="sr-sb">${sub}</div></div>${badge}</div>`;
+  }).join('');
+}
+
+// ─── PANEL VISIBILITY ─────────────────────────────────────────────────────────
+function closePanel(){ document.getElementById('panel').classList.remove('visible'); if(window.ql) window.ql.hide(); }
+if(window.ql){
+  window.ql.onShow(()=>{
+    document.getElementById('panel').classList.add('visible');
+    // Восстанавливаем визуальное состояние кнопок при каждом открытии
+    const saved=localStorage.getItem('ql-layout')||'grid';
+    if(saved!==layout){ layout=saved; }
+    setLayout(layout, true);
+    if(curTab&&curTab!=='search') renderContent();
+  });
+  window.ql.onHide(()=>document.getElementById('panel').classList.remove('visible'));
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(settingsOpen){ closeSettings(); return; }
+    if(curTab==='search') switchTab(sections[0]?.id||'',null);
+    else closePanel();
+  }
+});
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer=null;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2200); }
+
+// ══════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════
+function toggleSettings(){ settingsOpen?closeSettings():openSettings(); }
+
+function openSettings(){
+  settingsOpen=true;
+  document.getElementById('gearBtn').classList.add('gear-active');
+  document.getElementById('view-settings').classList.add('open');
+  renderStSidebar();
+  if(stSelSec) renderStContent(stSelSec);
+}
+
+function closeSettings(){
+  settingsOpen=false;
+  document.getElementById('gearBtn').classList.remove('gear-active');
+  document.getElementById('view-settings').classList.remove('open');
+  cancelEd();
+}
+
+function renderStSidebar(){
+  const list=document.getElementById('stSidebar');
+  list.innerHTML=sections.map(sec=>
+    `<div class="sec-row ${stSelSec===sec.id?'active':''}" onclick="stSelectSec('${sec.id}')">
+      <span class="sec-row-icon">${sec.icon||'📁'}</span>
+      <span class="sec-row-nm" id="srn-${sec.id}">${esc(sec.label)}</span>
+      <span class="sec-row-cnt">${sec.apps.length}</span>
+      <span class="sec-row-del" onclick="event.stopPropagation();delSection('${sec.id}')" title="Удалить раздел">✕</span>
+    </div>`
+  ).join('');
+}
+
+function stSelectSec(id){ stSelSec=id; cancelEd(); renderStSidebar(); renderStContent(id); }
+
+function renderStContent(id){
+  const sec=sections.find(s=>s.id===id); if(!sec) return;
+  document.getElementById('stConTitle').textContent=sec.label;
+  const hdr=document.getElementById('stConHdr');
+  hdr.innerHTML=`
+    <span class="sec-row-icon" style="font-size:16px;">${sec.icon||'📁'}</span>
+    <input class="ed-inp" style="flex:1;font-size:12px;" value="${esc(sec.label)}" placeholder="Название раздела"
+      onchange="renameSection('${id}',this.value)">
+    <button class="st-add-app-btn" onclick="showAppEditor('${id}','')">Приложение</button>`;
+
+  const list=document.getElementById('stAppsList');
+  if(!sec.apps.length){ list.innerHTML=`<div class="st-empty"><span class="big">📭</span>Нет приложений</div>`; return; }
+  list.innerHTML=sec.apps.map((a,idx)=>{
+    const icoHtml=a.imgUrl?`<img src="${a.imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:7px;">`:(a.e||'📦');
+    const cnt=launches[a.key]||0;
+    const usageBadge=cnt>0?`<span style="font-size:7px;color:rgba(200,140,60,.36);padding:1px 5px;border-radius:3px;border:1px solid rgba(200,90,0,.14);background:rgba(180,70,0,.06);">×${cnt}</span>`:'';
+    return `<div class="app-edit-row" data-key="${a.key}" data-idx="${idx}"
+        draggable="true"
+        ondragstart="onDragStart(event,'${id}','${a.key}')"
+        ondragover="onDragOver(event)"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event,'${id}','${a.key}')"
+        ondragend="onDragEnd(event)">
+      <div class="drag-handle" title="Перетащи чтобы изменить порядок">⠿</div>
+      <div class="ae-ico" style="background:${a.imgUrl?'transparent':a.c}" onclick="showAppEditor('${id}','${a.key}')">${icoHtml}</div>
+      <div class="ae-inf">
+        <div class="ae-name">${esc(a.n)} ${usageBadge}</div>
+        <div class="ae-path">${esc(a.exePath||a.website||'Встроенный')}</div>
+      </div>
+      <div class="ae-btns">
+        <div class="ae-btn" onclick="showAppEditor('${id}','${a.key}')" title="Редактировать">✎</div>
+        <div class="ae-btn del" onclick="delApp('${id}','${a.key}')" title="Удалить">✕</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addSection(){
+  const label=prompt('Название нового раздела:'); if(!label) return;
+  const id='sec_'+Date.now();
+  sections.push({id,label:label.trim(),icon:'📁',apps:[]});
+  save(); rebuildTabs(); renderStSidebar(); stSelectSec(id);
+  toast(`✓ Раздел «${label}» добавлен`);
+}
+
+function renameSection(id,val){
+  const sec=sections.find(s=>s.id===id); if(!sec||!val.trim()) return;
+  sec.label=val.trim(); save(); rebuildTabs(); renderStSidebar();
+}
+
+function delSection(id){
+  if(sections.length<=1){ toast('⚠ Нельзя удалить последний раздел'); return; }
+  const sec=sections.find(s=>s.id===id); if(!sec) return;
+  if(!confirm(`Удалить раздел «${sec.label}»?`)) return;
+  sections=sections.filter(s=>s.id!==id);
+  if(stSelSec===id) stSelSec=sections[0]?.id||null;
+  save(); rebuildTabs(); renderStSidebar();
+  if(stSelSec) renderStContent(stSelSec);
+  toast('○ Раздел удалён');
+}
+
+// ─── APP EDITOR ───────────────────────────────────────────────────────────────
+function showAppEditor(secId,appKey){
+  const sec=sections.find(s=>s.id===secId); if(!sec) return;
+  const app=appKey?sec.apps.find(a=>a.key===appKey):null;
+  const isNew=!app;
+  let selP=app?CP.findIndex(p=>p.g===app.g):0; if(selP<0) selP=0;
+
+  const ed=document.getElementById('stEditor'); if(!ed) return;
+  ed.classList.add('open');
+
+  const swatches=CP.map((p,i)=>`<div class="csw ${i===selP?'sel':''}" style="background:${p.sw}" onclick="selColor(${i})"></div>`).join('');
+  const hasImg=!!(app&&app.imgUrl);
+  const icoContent=hasImg?`<img id="edImgPrev" src="${app.imgUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`:(app?app.e:'🎮');
+
+  ed.innerHTML=`
+    <div class="ed-title">${isNew?'Добавить приложение':'Редактировать приложение'}</div>
+    <div class="ed-top">
+      <div class="ed-emoji-prev" id="edAppIco" style="background:${hasImg?'transparent':(app?app.c:CP[0].c)}" title="Кликни для загрузки картинки" onclick="document.getElementById('edImgFile').click()">
+        <span id="edIcoContent">${icoContent}</span>
+        <div id="edIcoHover" style="position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;font-size:18px;">📷</div>
+      </div>
+      <input type="file" id="edImgFile" accept="image/*" style="display:none" onchange="handleImgUpload(event)">
+      <div class="ed-fields">
+        <input class="ed-inp" id="edEmojiI" type="text" value="${app&&!hasImg?app.e:'🎮'}" placeholder="Иконка (эмодзи)" maxlength="4"
+          oninput="if(!document.getElementById('edImgData').value)document.getElementById('edIcoContent').textContent=this.value||'🎮'">
+        <input class="ed-inp" id="edNameI" type="text" value="${app?esc(app.n):''}" placeholder="Название приложения *">
+      </div>
+    </div>
+    <input type="hidden" id="edImgData" value="${app&&app.imgUrl?app.imgUrl:''}">
+    ${hasImg?`<div style="margin-bottom:6px;display:flex;gap:8px;align-items:center;"><span style="font-size:9px;color:rgba(200,140,60,.5);">📷 Своя картинка</span><span style="font-size:9px;color:rgba(200,100,80,.7);cursor:pointer;" onclick="clearEdImg()">✕ Убрать</span></div>`:''}
+    <div style="margin-bottom:6px;"><input class="ed-inp" id="edPathI" type="text" value="${app?esc(app.exePath||''):''}" placeholder="Путь к .exe (необязательно)" style="font-size:9.5px;"></div>
+    <div style="margin-bottom:8px;"><input class="ed-inp" id="edUrlI" type="text" value="${app?esc(app.website||''):''}" placeholder="Сайт / URL (резерв если нет exe)" style="font-size:9.5px;"></div>
+    <div class="ed-row2"><div class="color-lbl">Цвет</div><div class="color-swatches" id="colorSw">${swatches}</div></div>
+    <input type="hidden" id="edPI" value="${selP}">
+    <div class="ed-actions">
+      <button class="ed-btn cancel" onclick="cancelEd()">Отмена</button>
+      <button class="ed-btn save" onclick="saveApp('${secId}','${appKey||''}')">Сохранить</button>
+    </div>`;
+
+  const ico=document.getElementById('edAppIco'), hov=document.getElementById('edIcoHover');
+  if(ico&&hov){ ico.addEventListener('mouseenter',()=>hov.style.opacity='1'); ico.addEventListener('mouseleave',()=>hov.style.opacity='0'); }
+  setTimeout(()=>document.getElementById(app?'edNameI':'edEmojiI')?.focus(),50);
+}
+
+function handleImgUpload(ev){
+  const file=ev.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const url=e.target.result;
+    document.getElementById('edImgData').value=url;
+    const ico=document.getElementById('edIcoContent');
+    if(ico) ico.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
+    const bg=document.getElementById('edAppIco'); if(bg) bg.style.background='transparent';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearEdImg(){
+  document.getElementById('edImgData').value='';
+  const ico=document.getElementById('edIcoContent');
+  if(ico) ico.textContent=document.getElementById('edEmojiI')?.value||'🎮';
+  const bg=document.getElementById('edAppIco');
+  const pi=parseInt(document.getElementById('edPI')?.value||'0');
+  if(bg) bg.style.background=CP[pi]?.c||CP[0].c;
+}
+
+function selColor(idx){
+  document.querySelectorAll('#colorSw .csw').forEach((el,i)=>el.classList.toggle('sel',i===idx));
+  document.getElementById('edPI').value=idx;
+  const bg=document.getElementById('edAppIco');
+  if(bg&&!document.getElementById('edImgData').value) bg.style.background=CP[idx].c;
+}
+
+function saveApp(secId,existKey){
+  const sec=sections.find(s=>s.id===secId); if(!sec) return;
+  const e=document.getElementById('edEmojiI')?.value.trim()||'🎮';
+  const n=document.getElementById('edNameI')?.value.trim();
+  const exP=document.getElementById('edPathI')?.value.trim()||'';
+  const url=document.getElementById('edUrlI')?.value.trim()||'';
+  const imgUrl=document.getElementById('edImgData')?.value||'';
+  const pi=parseInt(document.getElementById('edPI')?.value||'0');
+  if(!n){ toast('⚠ Введи название'); return; }
+  const p=CP[pi]||CP[0];
+  if(existKey){
+    const app=sec.apps.find(a=>a.key===existKey);
+    if(app){ app.e=e; app.n=n; app.exePath=exP; app.website=url; app.imgUrl=imgUrl; app.c=p.c; app.g=p.g; }
+  } else {
+    sec.apps.push({key:'custom_'+Date.now(),n,e,c:p.c,g:p.g,exePath:exP,website:url,imgUrl});
+  }
+  save(); cancelEd(); rebuildTabs(); renderStContent(secId);
+  if(curTab===secId) renderContent();
+  toast(existKey?`✓ ${n} обновлён`:`✓ ${n} добавлен`);
+}
+
+function delApp(secId,appKey){
+  const sec=sections.find(s=>s.id===secId); if(!sec) return;
+  const app=sec.apps.find(a=>a.key===appKey); if(!app) return;
+  if(!confirm(`Удалить «${app.n}»?`)) return;
+  sec.apps=sec.apps.filter(a=>a.key!==appKey);
+  save(); rebuildTabs(); renderStContent(secId);
+  if(curTab===secId) renderContent();
+  toast('○ Приложение удалено');
+}
+
+// ─── DRAG-TO-REORDER ──────────────────────────────────────────────────────────
+// Works by moving DOM nodes live during drag (like phone reorder), then syncing
+let _dragEl=null, _dragSrcIdx=-1;
+
+function onDragStart(ev, secId, key){
+  const row = ev.currentTarget;
+  _dragEl      = row;
+  _dragKey     = key;
+  _dragSecId   = secId;
+  _dragSrcIdx  = parseInt(row.dataset.idx);
+  ev.dataTransfer.effectAllowed='move';
+  ev.dataTransfer.setData('text/plain', key);
+  // slight delay so ghost image captures before class change
+  requestAnimationFrame(()=>{ row.classList.add('dragging'); });
+}
+
+function onDragOver(ev){
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect='move';
+  const row = ev.currentTarget;
+  if(!_dragEl || row===_dragEl) return;
+  // visually swap rows live in the DOM so user sees reorder happening
+  const list = row.parentNode;
+  const rows  = [...list.children];
+  const fromI = rows.indexOf(_dragEl);
+  const toI   = rows.indexOf(row);
+  if(fromI < 0 || toI < 0) return;
+  // remove drag-over highlight from all others, add to target
+  rows.forEach(r=>r.classList.remove('drag-over'));
+  row.classList.add('drag-over');
+  // move DOM node
+  if(fromI < toI) list.insertBefore(_dragEl, row.nextSibling);
+  else            list.insertBefore(_dragEl, row);
+}
+
+function onDragLeave(ev){
+  // only remove highlight if we actually left the row (not a child)
+  if(!ev.currentTarget.contains(ev.relatedTarget))
+    ev.currentTarget.classList.remove('drag-over');
+}
+
+function onDrop(ev, secId, targetKey){
+  ev.preventDefault();
+  ev.currentTarget.classList.remove('drag-over');
+  if(!_dragEl || !_dragKey) return;
+  // read final DOM order and sync to sections array
+  const list   = document.getElementById('stAppsList');
+  const rows   = [...list.querySelectorAll('.app-edit-row')];
+  const newOrder = rows.map(r=>r.dataset.key).filter(Boolean);
+  const sec = sections.find(s=>s.id===secId); if(!sec) return;
+  const keyMap = Object.fromEntries(sec.apps.map(a=>[a.key,a]));
+  sec.apps = newOrder.map(k=>keyMap[k]).filter(Boolean);
+  save();
+  // re-render to refresh idx attrs and usage badges
+  renderStContent(secId);
+  if(curTab===secId) renderContent();
+  toast('✓ Порядок сохранён');
+  _dragEl=null; _dragKey=null; _dragSecId=null; _dragSrcIdx=-1;
+}
+
+function onDragEnd(ev){
+  // cleanup if drop fired outside a valid target
+  if(_dragEl){ _dragEl.classList.remove('dragging'); }
+  document.querySelectorAll('.app-edit-row').forEach(r=>r.classList.remove('drag-over'));
+  _dragEl=null; _dragKey=null; _dragSecId=null; _dragSrcIdx=-1;
+}
+
+function cancelEd(){
+  editorMode=null;
+  const ed=document.getElementById('stEditor');
+  if(ed){ ed.classList.remove('open'); ed.innerHTML=''; }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>
