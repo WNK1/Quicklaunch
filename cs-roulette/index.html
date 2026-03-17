@@ -153,6 +153,19 @@
         </div>
       </div>
 
+      <!-- UPGRADE RESULT -->
+      <div class="upgrade-result hidden" id="upgradeResult">
+        <div class="upgrade-result-inner">
+          <div class="ur-skin-emoji" id="urEmoji"></div>
+          <div class="ur-skin-name" id="urName"></div>
+          <div class="ur-skin-price" id="urPrice"></div>
+          <div class="ur-actions">
+            <button class="btn-primary" id="urSellBtn">💰 ПРОДАТЬ</button>
+            <button class="btn-secondary" id="urAgainBtn">🔄 ЗАНОВО</button>
+          </div>
+        </div>
+      </div>
+
       <!-- SKIN PICKER -->
       <div class="section">
         <h2 class="section-title"><span class="neon-dot"></span> ВЫБЕРИ СКИН ДЛЯ АПГРЕЙДА</h2>
@@ -225,6 +238,11 @@
         <p>Ставь на цвет — красный, чёрный или зелёный джекпот</p>
       </div>
       <div class="roulette-container">
+        <div class="roulette-countdown">
+          <span class="countdown-label">Следующий раунд через</span>
+          <span class="countdown-num" id="rouletteTimer">15s</span>
+          <div class="countdown-bar-wrap"><div class="countdown-bar" id="rouletteTimerBar"></div></div>
+        </div>
         <div class="roulette-track-wrap">
           <div class="roulette-arrow"></div>
           <div class="roulette-track" id="rouletteTrack"></div>

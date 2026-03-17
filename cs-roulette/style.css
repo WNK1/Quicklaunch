@@ -987,6 +987,91 @@ body {
 .hist-item.b { background: #374151; }
 .hist-item.g { background: var(--green); }
 
+/* roulette landed highlight */
+.roulette-cell.landed {
+  border: 2px solid #fff;
+  box-shadow: 0 0 18px rgba(255,255,255,0.6);
+  transform: scale(1.12);
+  z-index: 2;
+}
+
+/* bet active state */
+.bet-btn.bet-active {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* countdown */
+.roulette-countdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 18px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.countdown-label { font-size: 12px; color: var(--text2); flex: 1; }
+.countdown-num {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--orange);
+  min-width: 36px;
+  text-align: right;
+}
+.countdown-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.countdown-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--orange2));
+  border-radius: 2px;
+  transition: width 0.9s linear;
+}
+
+/* ===== UPGRADE RESULT ===== */
+.upgrade-result {
+  margin: 0 32px 24px;
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,229,204,0.05));
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 16px;
+  text-align: center;
+  animation: none;
+}
+.upgrade-result.win-anim {
+  animation: winPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes winPop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.upgrade-result-inner { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ur-skin-emoji { font-size: 80px; line-height: 1; }
+.ur-skin-name  { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; }
+.ur-skin-price {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--teal), var(--orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ur-actions { display: flex; gap: 12px; margin-top: 8px; }
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-8px); }
+  40%,80% { transform: translateX(8px); }
+}
+
 /* ===== MODAL ===== */
 .modal-overlay {
   position: fixed;

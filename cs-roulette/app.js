@@ -227,31 +227,46 @@ let selectedSkin = null;
 function selectSkinForUpgrade(skin) {
   selectedSkin = skin;
   const mySlot = document.getElementById('mySlot');
-  mySlot.innerHTML = `<div style="font-size:60px">${skin.emoji}</div>`;
+  mySlot.innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <div style="font-size:52px">${skin.emoji}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${skin.name}</div>
+    </div>`;
   mySlot.classList.add('filled');
   document.getElementById('myValue').textContent = skin.price.toLocaleString('ru') + ' G';
+  document.getElementById('upgradeResult').classList.add('hidden');
+  document.getElementById('upgradeBtn').classList.remove('hidden');
   updateUpgradeTarget();
+}
+
+function findClosestSkin(targetPrice) {
+  // Find skin with price >= targetPrice (next tier up), fallback to closest
+  const sorted = [...SKINS].sort((a,b) => a.price - b.price);
+  const above = sorted.filter(s => s.price >= targetPrice);
+  if (above.length) return above[0];
+  return sorted.reduce((a,b) => Math.abs(b.price - targetPrice) < Math.abs(a.price - targetPrice) ? b : a);
 }
 
 function updateUpgradeTarget() {
   if (!selectedSkin) return;
   const mult = parseFloat(document.querySelector('.mult-btn.active').dataset.mult);
   const targetPrice = Math.round(selectedSkin.price * mult);
-  const chance = Math.min(95, Math.round((1 / mult) * 100));
+  // chance: higher multiplier = lower chance. x1.5→63%, x2→47%, x5→19%, x10→9.5%, x50→1.9%
+  const chanceRaw = (1 / mult) * 95;
+  const chance = Math.max(1, Math.min(90, Math.round(chanceRaw)));
 
-  document.getElementById('targetValue').textContent = targetPrice.toLocaleString('ru') + ' G';
+  const targetSkin = findClosestSkin(targetPrice);
+  document.getElementById('targetValue').textContent = targetSkin.price.toLocaleString('ru') + ' G';
 
-  // find target skin
-  const closer = SKINS.reduce((a, b) =>
-    Math.abs(b.price - targetPrice) < Math.abs(a.price - targetPrice) ? b : a
-  );
   const targetSlot = document.getElementById('targetSlot');
-  targetSlot.innerHTML = `<div style="font-size:60px">${closer.emoji}</div>`;
+  targetSlot.innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <div style="font-size:52px">${targetSkin.emoji}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">${targetSkin.name}</div>
+    </div>`;
   targetSlot.classList.add('filled-target');
 
-  // update ring
-  const ringPercent = document.getElementById('ringPercent');
-  ringPercent.textContent = chance + '%';
+  document.getElementById('ringPercent').textContent = chance + '%';
   const circumference = 565;
   const offset = circumference - (circumference * chance / 100);
   document.getElementById('ringProgress').setAttribute('stroke-dashoffset', offset);
@@ -266,39 +281,75 @@ document.querySelectorAll('.mult-btn').forEach(btn => {
 });
 
 document.getElementById('upgradeBtn').addEventListener('click', () => {
-  if (!selectedSkin) {
-    alert('Выбери скин для апгрейда!');
-    return;
-  }
-  const mult = parseFloat(document.querySelector('.mult-btn.active').dataset.mult);
-  const chance = Math.min(95, Math.round((1 / mult) * 100));
-  const win = Math.random() * 100 < chance;
+  if (!selectedSkin) { showNotification('Выбери скин для апгрейда!'); return; }
+
+  const mult     = parseFloat(document.querySelector('.mult-btn.active').dataset.mult);
+  const chance   = Math.max(1, Math.min(90, Math.round((1 / mult) * 95)));
+  const roll     = Math.random() * 100;
+  const win      = roll < chance;
+  const winSkin  = findClosestSkin(Math.round(selectedSkin.price * mult));
 
   const btn = document.getElementById('upgradeBtn');
   btn.textContent = 'КРУТИМ...';
   btn.disabled = true;
 
-  // animate ring
+  // Spin animation on ring
   const ring = document.getElementById('upgradeRing');
-  ring.style.animation = 'spin 0.5s linear infinite';
+  ring.style.animation = 'spin 0.6s linear infinite';
+
+  // Animate ring progress from 0 → result quickly to build tension
+  const ringProgress = document.getElementById('ringProgress');
+  const circumference = 565;
+  ringProgress.setAttribute('stroke-dashoffset', circumference); // reset to 0%
+  setTimeout(() => {
+    ringProgress.style.transition = 'stroke-dashoffset 1.2s ease-out';
+    const fillTo = win ? chance : Math.round(roll); // fill to roll value
+    ringProgress.setAttribute('stroke-dashoffset', circumference - (circumference * fillTo / 100));
+  }, 100);
 
   setTimeout(() => {
     ring.style.animation = '';
+    ringProgress.style.transition = '';
     btn.disabled = false;
+
     if (win) {
-      btn.textContent = '✅ ПОБЕДА!';
-      btn.style.background = 'linear-gradient(135deg, #10B981, #059669)';
-      showFloatingText('+ ' + Math.round(selectedSkin.price * mult).toLocaleString('ru') + ' G', true);
+      showUpgradeResult(winSkin, true);
     } else {
-      btn.textContent = '❌ ПРОИГРЫШ';
-      btn.style.background = 'linear-gradient(135deg, #EF4444, #B91C1C)';
-      showFloatingText('Попробуй снова!', false);
-    }
-    setTimeout(() => {
       btn.textContent = 'АПГРЕЙД ↑';
-      btn.style.background = '';
-    }, 2000);
-  }, 1500);
+      showFloatingText('❌ Поражение  –' + selectedSkin.price.toLocaleString('ru') + ' G', false);
+      showNotification('Не повезло! Попробуй ещё раз');
+      // shake effect
+      ring.style.animation = 'shake 0.4s ease';
+      setTimeout(() => { ring.style.animation = ''; updateUpgradeTarget(); }, 450);
+    }
+  }, 1800);
+});
+
+function showUpgradeResult(skin, win) {
+  const btn = document.getElementById('upgradeBtn');
+  btn.textContent = 'АПГРЕЙД ↑';
+  btn.classList.add('hidden');
+
+  const resultEl = document.getElementById('upgradeResult');
+  document.getElementById('urEmoji').textContent  = skin.emoji;
+  document.getElementById('urName').textContent   = skin.name;
+  document.getElementById('urPrice').textContent  = skin.price.toLocaleString('ru') + ' G';
+  resultEl.classList.remove('hidden');
+  resultEl.classList.add('win-anim');
+
+  showFloatingText('🎉 +'  + skin.price.toLocaleString('ru') + ' G', true);
+}
+
+document.getElementById('urAgainBtn').addEventListener('click', () => {
+  document.getElementById('upgradeResult').classList.add('hidden');
+  document.getElementById('upgradeBtn').classList.remove('hidden');
+  if (selectedSkin) updateUpgradeTarget();
+});
+document.getElementById('urSellBtn').addEventListener('click', () => {
+  const price = parseInt(document.getElementById('urPrice').textContent);
+  showNotification('💰 Продано! +' + document.getElementById('urPrice').textContent);
+  document.getElementById('upgradeResult').classList.add('hidden');
+  document.getElementById('upgradeBtn').classList.remove('hidden');
 });
 
 function showFloatingText(text, positive) {
@@ -431,92 +482,163 @@ function getAvatar(name) {
 
 /* ===== ROULETTE PAGE ===== */
 (function buildRoulette() {
-  const track = document.getElementById('rouletteTrack');
-  const colors = ['r','r','r','b','b','b','r','b','r','b','b','g','r','b','r','b'];
-  const colorLabels = { r: '7', b: '◆', g: '0' };
+  const CELL_W   = 72; // 64px cell + 4px gap on each side = 72px stride
+  const TOTAL    = 300; // enough cells so any offset stays in bounds
+  // 15 red, 15 black, 2 green per 32 pattern (≈ real CS roulette odds)
+  const SEQ  = ['r','r','b','b','r','b','r','b','b','r','b','r','b','r','b','g',
+                 'r','b','r','b','b','r','b','b','r','b','r','r','b','b','r','g'];
+  const LABEL = { r:'7', b:'◆', g:'0' };
 
-  // build track
   const inner = document.createElement('div');
   inner.className = 'roulette-inner';
   inner.id = 'rouletteInner';
-  for (let i = 0; i < 50; i++) {
-    const c = colors[i % colors.length];
+  for (let i = 0; i < TOTAL; i++) {
+    const c    = SEQ[i % SEQ.length];
     const cell = document.createElement('div');
-    cell.className = 'roulette-cell ' + c;
-    cell.textContent = colorLabels[c];
+    cell.className  = 'roulette-cell ' + c;
+    cell.textContent = LABEL[c];
     inner.appendChild(cell);
   }
-  track.appendChild(inner);
+  document.getElementById('rouletteTrack').appendChild(inner);
 
   // history
   const histEl = document.getElementById('rouletteHistory');
+  const colorLabels = LABEL;
   ROULETTE_HISTORY.forEach(c => {
     const el = document.createElement('div');
     el.className = 'hist-item ' + c;
-    el.textContent = colorLabels[c];
+    el.textContent = LABEL[c];
     histEl.appendChild(el);
   });
 
   // demo players
-  const redPlayers = [
-    { name:'DimaN', amount: 500 },
-    { name:'ProGamer', amount: 1200 },
-  ];
-  const greenPlayers = [
-    { name:'NightKill', amount: 200 },
-  ];
-  const blackPlayers = [
-    { name:'shadow99', amount: 800 },
-    { name:'Alpha_GO', amount: 3000 },
-    { name:'xX_Snake', amount: 500 },
-  ];
+  const redPlayers   = [{ name:'DimaN', amount:500 },{ name:'ProGamer', amount:1200 }];
+  const greenPlayers = [{ name:'NightKill', amount:200 }];
+  const blackPlayers = [{ name:'shadow99', amount:800 },{ name:'Alpha_GO', amount:3000 },{ name:'xX_Snake', amount:500 }];
 
   function renderPlayers(id, players) {
-    const el = document.getElementById(id);
-    el.innerHTML = players.map(p => `
+    document.getElementById(id).innerHTML = players.map(p => `
       <div class="bet-player-row">
         <span class="bpr-name">${p.name}</span>
         <span class="bpr-amount">${p.amount.toLocaleString('ru')} G</span>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
-  renderPlayers('redPlayers', redPlayers);
+  renderPlayers('redPlayers',   redPlayers);
   renderPlayers('greenPlayers', greenPlayers);
   renderPlayers('blackPlayers', blackPlayers);
 
-  let spinning = false;
+  let spinning   = false;
+  let betColor   = null;
+  let countdown  = null;
+  let timeLeft   = 15;
+  const timerEl  = document.getElementById('rouletteTimer');
+  const timerBar = document.getElementById('rouletteTimerBar');
+
+  function startCountdown() {
+    timeLeft = 15;
+    clearInterval(countdown);
+    updateTimerUI();
+    countdown = setInterval(() => {
+      timeLeft--;
+      updateTimerUI();
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        doSpin();
+      }
+    }, 1000);
+  }
+
+  function updateTimerUI() {
+    if (timerEl)  timerEl.textContent  = timeLeft + 's';
+    if (timerBar) timerBar.style.width = (timeLeft / 15 * 100) + '%';
+  }
+
+  function doSpin() {
+    if (spinning) return;
+    spinning = true;
+    document.querySelectorAll('.bet-btn').forEach(b => { b.disabled = true; });
+
+    const track      = document.getElementById('rouletteTrack');
+    const trackW     = track.offsetWidth;
+    const trackCenter = trackW / 2;
+
+    // Determine result
+    const outcomes = ['r','r','r','b','b','b','b','b','b','g'];
+    const result   = outcomes[Math.floor(Math.random() * outcomes.length)];
+
+    // Find a landing cell in the range [200..260] that matches result
+    let landIdx = 220 + Math.floor(Math.random() * 30);
+    for (let d = 0; d < SEQ.length; d++) {
+      const idx = landIdx + d;
+      if (SEQ[idx % SEQ.length] === result) { landIdx = idx; break; }
+    }
+    // Clamp so we never exceed TOTAL
+    landIdx = Math.min(landIdx, TOTAL - 5);
+
+    // Pixel offset: place landIdx cell center at trackCenter
+    const cellLeft  = landIdx * CELL_W;
+    const jitter    = (Math.random() - 0.5) * 40; // ±20px within cell
+    const targetPx  = cellLeft - trackCenter + CELL_W / 2 + jitter;
+
+    // 1. Snap back instantly (no visible jump because inner starts at 0)
+    inner.style.transition = 'none';
+    inner.style.transform  = 'translateX(0)';
+
+    // 2. On next two frames apply animation (double rAF ensures transition:none is painted first)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      inner.style.transition = 'transform 5s cubic-bezier(0.04, 0.92, 0.06, 1)';
+      inner.style.transform  = `translateX(-${Math.max(0, targetPx)}px)`;
+    }));
+
+    setTimeout(() => {
+      // Highlight landed cell
+      const cells = inner.querySelectorAll('.roulette-cell');
+      cells.forEach(c => c.classList.remove('landed'));
+      if (cells[landIdx]) cells[landIdx].classList.add('landed');
+
+      const resultName = result === 'r' ? 'КРАСНЫЙ' : result === 'g' ? 'ЗЕЛЁНЫЙ' : 'ЧЁРНЫЙ';
+      const win = betColor
+        ? (betColor === 'red'   && result === 'r') ||
+          (betColor === 'green' && result === 'g') ||
+          (betColor === 'black' && result === 'b')
+        : false;
+
+      if (betColor) {
+        showNotification(win ? `✅ Победа! Выпал ${resultName}` : `❌ Поражение. Выпал ${resultName}`);
+      } else {
+        showNotification(`Выпал ${resultName}`);
+      }
+
+      // Add to history
+      const newHist = document.createElement('div');
+      newHist.className = 'hist-item ' + result;
+      newHist.textContent = LABEL[result];
+      histEl.insertBefore(newHist, histEl.firstChild);
+      if (histEl.children.length > 24) histEl.removeChild(histEl.lastChild);
+
+      // Reset for next round
+      setTimeout(() => {
+        spinning  = false;
+        betColor  = null;
+        document.querySelectorAll('.bet-btn').forEach(b => { b.disabled = false; });
+        startCountdown();
+      }, 2500);
+    }, 5200);
+  }
+
   document.querySelectorAll('.bet-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (spinning) { showNotification('Ставки уже сделаны, ожидайте результата'); return; }
-      spinning = true;
-      const color = btn.dataset.color;
-      showNotification('Ставка принята на ' + (color === 'red' ? 'КРАСНЫЙ' : color === 'green' ? 'ЗЕЛЁНЫЙ' : 'ЧЁРНЫЙ'));
-
-      // spin animation
-      const rouletteInner = document.getElementById('rouletteInner');
-      const offset = -(Math.random() * 2000 + 3000);
-      rouletteInner.style.transition = 'transform 4s cubic-bezier(0.05, 0.9, 0.1, 1)';
-      rouletteInner.style.transform = `translateX(${offset}px)`;
-
-      setTimeout(() => {
-        rouletteInner.style.transition = '';
-        rouletteInner.style.transform = '';
-        spinning = false;
-        const outcomes = ['r','r','r','b','b','b','b','b','b','g'];
-        const result = outcomes[Math.floor(Math.random() * outcomes.length)];
-        const resultName = result === 'r' ? 'КРАСНЫЙ' : result === 'g' ? 'ЗЕЛЁНЫЙ' : 'ЧЁРНЫЙ';
-        const win = (color === 'red' && result === 'r') || (color === 'green' && result === 'g') || (color === 'black' && result === 'b');
-        showNotification(win ? `✅ Победа! Выпал ${resultName}` : `❌ Поражение. Выпал ${resultName}`);
-
-        // add to history
-        const newHist = document.createElement('div');
-        newHist.className = 'hist-item ' + result;
-        newHist.textContent = colorLabels[result];
-        histEl.insertBefore(newHist, histEl.firstChild);
-        if (histEl.children.length > 20) histEl.removeChild(histEl.lastChild);
-      }, 4100);
+      if (spinning) { showNotification('Дождитесь конца раунда'); return; }
+      betColor = btn.dataset.color;
+      const label = betColor === 'red' ? 'КРАСНЫЙ' : betColor === 'green' ? 'ЗЕЛЁНЫЙ' : 'ЧЁРНЫЙ';
+      showNotification(`Ставка на ${label}!`);
+      document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('bet-active'));
+      btn.classList.add('bet-active');
     });
   });
+
+  // Start first round countdown
+  startCountdown();
 })();
 
 /* ===== CASE OPEN MODAL ===== */
