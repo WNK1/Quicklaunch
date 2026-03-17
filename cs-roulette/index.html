@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSDROP — Открывай кейсы CS2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-logo">
+      <span class="logo-cs">CS</span><span class="logo-drop">DROP</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link active" data-page="cases">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        Кейсы
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="upgrade">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+        Апгрейд
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="coinflip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Коин Флип
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="battle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 9H17v1.5c0 .83-.67 1.5-1.5 1.5S14 11.33 14 10.5 14.67 9 15.5 9z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 15H7v-1.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        Кейс Батл
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="contracts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Контракты
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="roulette">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 110 20"/><path d="M12 6v6l4 2"/></svg>
+        Рулетка
+      </a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="balance-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><circle cx="12" cy="12" r="10"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="#1a1a2e" font-weight="bold">G</text></svg>
+        <span id="balance">0 G</span>
+      </div>
+      <button class="btn-primary" id="loginBtn">ВОЙТИ</button>
+    </div>
+  </nav>
+
+  <!-- PAGES -->
+  <main id="app">
+
+    <!-- PAGE: CASES -->
+    <section class="page active" id="page-cases">
+      <div class="hero">
+        <div class="hero-bg-particles" id="particles"></div>
+        <div class="hero-content">
+          <div class="hero-badge">🔥 ГОРЯЧЕЕ ПРЕДЛОЖЕНИЕ</div>
+          <h1 class="hero-title">ОТКРЫВАЙ <span class="gradient-text">CS2</span> КЕЙСЫ</h1>
+          <p class="hero-sub">Тысячи скинов • Мгновенные выплаты • Честная игра</p>
+          <div class="hero-stats">
+            <div class="stat"><span class="stat-num" data-count="1247382">0</span><span class="stat-label">Кейсов открыто</span></div>
+            <div class="stat"><span class="stat-num" data-count="48291">0</span><span class="stat-label">Игроков онлайн</span></div>
+            <div class="stat"><span class="stat-num" data-count="99">0</span><span class="stat-label">% Честность</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE DROP TICKER -->
+      <div class="ticker-wrap">
+        <div class="ticker-label">ПОСЛЕДНИЕ ДРОПЫ</div>
+        <div class="ticker" id="ticker">
+          <div class="ticker-inner" id="tickerInner"></div>
+        </div>
+      </div>
+
+      <!-- FEATURED CASES -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="neon-dot"></span> ТОПОВЫЕ КЕЙСЫ</h2>
+          <a href="#" class="see-all">Все кейсы →</a>
+        </div>
+        <div class="cases-grid" id="featuredCases"></div>
+      </div>
+
+      <!-- CASE CATEGORIES -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="neon-dot teal"></span> КС2 ОРИГИНАЛЬНЫЕ</h2>
+        </div>
+        <div class="cases-grid" id="cs2Cases"></div>
+      </div>
+    </section>
+
+    <!-- PAGE: UPGRADE -->
+    <section class="page" id="page-upgrade">
+      <div class="page-hero upgrade-hero">
+        <h1>АПГРЕЙД <span class="gradient-text">СКИНОВ</span></h1>
+        <p>Улучши свой скин — выиграй более ценный</p>
+      </div>
+      <div class="upgrade-container">
+        <div class="upgrade-panel">
+          <div class="upgrade-label">ТВОЙ СКИН</div>
+          <div class="skin-slot" id="mySlot">
+            <div class="slot-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+              <span>Выбери скин</span>
+            </div>
+          </div>
+          <div class="skin-value" id="myValue">— G</div>
+        </div>
+
+        <div class="upgrade-center">
+          <div class="upgrade-ring" id="upgradeRing">
+            <svg class="ring-svg" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="90" fill="none" stroke="#1e2a3a" stroke-width="12"/>
+              <circle cx="100" cy="100" r="90" fill="none" stroke="url(#ringGrad)" stroke-width="12"
+                stroke-dasharray="565" stroke-dashoffset="400" stroke-linecap="round"
+                id="ringProgress" style="transform:rotate(-90deg);transform-origin:center;"/>
+              <defs>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#FF6B00"/>
+                  <stop offset="100%" stop-color="#00E5CC"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="ring-inner">
+              <div class="ring-percent" id="ringPercent">65%</div>
+              <div class="ring-chance">шанс</div>
+            </div>
+          </div>
+          <div class="upgrade-multiplier-row">
+            <button class="mult-btn active" data-mult="1.5">x1.5</button>
+            <button class="mult-btn" data-mult="2">x2</button>
+            <button class="mult-btn" data-mult="5">x5</button>
+            <button class="mult-btn" data-mult="10">x10</button>
+            <button class="mult-btn" data-mult="50">x50</button>
+          </div>
+          <button class="btn-primary btn-upgrade" id="upgradeBtn">АПГРЕЙД ↑</button>
+        </div>
+
+        <div class="upgrade-panel">
+          <div class="upgrade-label">СКИН АПГРЕЙДА</div>
+          <div class="skin-slot" id="targetSlot">
+            <div class="slot-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+              <span>Авто подбор</span>
+            </div>
+          </div>
+          <div class="skin-value" id="targetValue">— G</div>
+        </div>
+      </div>
+
+      <!-- SKIN PICKER -->
+      <div class="section">
+        <h2 class="section-title"><span class="neon-dot"></span> ВЫБЕРИ СКИН ДЛЯ АПГРЕЙДА</h2>
+        <div class="skins-grid" id="upgradeSkinsGrid"></div>
+      </div>
+    </section>
+
+    <!-- PAGE: COINFLIP -->
+    <section class="page" id="page-coinflip">
+      <div class="page-hero coinflip-hero">
+        <h1>КОИН <span class="gradient-text">ФЛИП</span></h1>
+        <p>1 vs 1 — Подбрось монету, забери скины соперника</p>
+      </div>
+      <div class="coinflip-actions">
+        <button class="btn-primary btn-lg" id="createFlipBtn">+ СОЗДАТЬ ИГРУ</button>
+        <div class="coinflip-filters">
+          <button class="filter-btn active">Все</button>
+          <button class="filter-btn">Мои</button>
+          <button class="filter-btn">Высокие ставки</button>
+        </div>
+      </div>
+      <div class="coinflip-list" id="coinflipList"></div>
+    </section>
+
+    <!-- PAGE: CASE BATTLE -->
+    <section class="page" id="page-battle">
+      <div class="page-hero battle-hero">
+        <h1>КЕЙС <span class="gradient-text">БАТЛ</span></h1>
+        <p>Открывай кейсы против других игроков — кто соберёт больше?</p>
+      </div>
+      <div class="battle-actions">
+        <button class="btn-primary btn-lg">+ СОЗДАТЬ БАТЛ</button>
+        <div class="coinflip-filters">
+          <button class="filter-btn active">Активные</button>
+          <button class="filter-btn">Завершённые</button>
+          <button class="filter-btn">2v2</button>
+          <button class="filter-btn">1v1</button>
+        </div>
+      </div>
+      <div class="battle-list" id="battleList"></div>
+    </section>
+
+    <!-- PAGE: CONTRACTS -->
+    <section class="page" id="page-contracts">
+      <div class="page-hero contracts-hero">
+        <h1>КОНТРАКТЫ</h1>
+        <p>Обменяй 10 скинов одной серии на 1 более редкий</p>
+      </div>
+      <div class="contracts-container">
+        <div class="contract-input-area">
+          <h3>ДОБАВЬ СКИНЫ (0/10)</h3>
+          <div class="contract-slots" id="contractSlots"></div>
+        </div>
+        <div class="contract-arrow">→</div>
+        <div class="contract-output">
+          <h3>ПОЛУЧИШЬ</h3>
+          <div class="contract-result" id="contractResult">
+            <div class="slot-empty">
+              <span>Добавь 10 скинов</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: ROULETTE -->
+    <section class="page" id="page-roulette">
+      <div class="page-hero roulette-hero">
+        <h1>РУЛЕТКА</h1>
+        <p>Ставь на цвет — красный, чёрный или зелёный джекпот</p>
+      </div>
+      <div class="roulette-container">
+        <div class="roulette-track-wrap">
+          <div class="roulette-arrow"></div>
+          <div class="roulette-track" id="rouletteTrack"></div>
+        </div>
+        <div class="roulette-bets">
+          <div class="bet-col red">
+            <div class="bet-label">КРАСНЫЙ <span>x2</span></div>
+            <button class="bet-btn red-btn" data-color="red">Ставить на КРАСНЫЙ</button>
+            <div class="bet-players" id="redPlayers"></div>
+          </div>
+          <div class="bet-col green">
+            <div class="bet-label">ЗЕЛЁНЫЙ <span>x14</span></div>
+            <button class="bet-btn green-btn" data-color="green">Ставить на ЗЕЛЁНЫЙ</button>
+            <div class="bet-players" id="greenPlayers"></div>
+          </div>
+          <div class="bet-col black">
+            <div class="bet-label">ЧЁРНЫЙ <span>x2</span></div>
+            <button class="bet-btn black-btn" data-color="black">Ставить на ЧЁРНЫЙ</button>
+            <div class="bet-players" id="blackPlayers"></div>
+          </div>
+        </div>
+        <div class="roulette-history" id="rouletteHistory"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CASE OPEN MODAL -->
+  <div class="modal-overlay" id="caseModal">
+    <div class="modal">
+      <button class="modal-close" id="closeModal">✕</button>
+      <h2 class="modal-title" id="modalTitle">Открыть кейс</h2>
+      <div class="case-spinner-wrap">
+        <div class="spinner-arrow-top"></div>
+        <div class="case-spinner" id="caseSpinner"></div>
+        <div class="spinner-arrow-bot"></div>
+      </div>
+      <div class="open-controls">
+        <div class="open-price-badge" id="openPriceBadge">399 G</div>
+        <button class="btn-primary btn-open" id="openCaseBtn">ОТКРЫТЬ КЕЙС</button>
+      </div>
+      <div class="win-result hidden" id="winResult">
+        <div class="win-skin-img" id="winSkinImg"></div>
+        <div class="win-skin-name" id="winSkinName"></div>
+        <div class="win-skin-price" id="winSkinPrice"></div>
+        <div class="win-actions">
+          <button class="btn-secondary" id="sellWinBtn">ПРОДАТЬ</button>
+          <button class="btn-primary" id="openAgainBtn">ЕЩЁ РАЗ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARTICLES CANVAS -->
+  <canvas id="bgCanvas"></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>
