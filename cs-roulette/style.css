@@ -133,6 +133,90 @@ body {
 }
 .btn-primary:active { transform: translateY(0); }
 
+/* ── Steam login button ─────────────────────────────────────── */
+.btn-steam {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #1b2838, #2a475e);
+  border: 1px solid #4c6b8a;
+  border-radius: 8px;
+  color: #c7d5e0;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-steam:hover {
+  background: linear-gradient(135deg, #2a475e, #1b2838);
+  border-color: #66c0f4;
+  color: #66c0f4;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102,192,244,0.25);
+}
+.btn-steam .steam-logo { flex-shrink: 0; }
+
+/* ── User profile block (shown after login) ─────────────────── */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid #4c6b8a;
+}
+.user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-steam-label {
+  font-size: 10px;
+  color: #66c0f4;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(235, 75, 75, 0.1);
+  border: 1px solid rgba(235, 75, 75, 0.25);
+  color: #eb4b4b;
+  text-decoration: none;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.btn-logout:hover {
+  background: rgba(235, 75, 75, 0.2);
+  border-color: #eb4b4b;
+}
+
 .btn-secondary {
   padding: 10px 22px;
   background: transparent;

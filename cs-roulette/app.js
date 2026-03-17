@@ -1,3 +1,22 @@
+/* ===== STEAM AUTH ===== */
+(async function checkAuth() {
+  try {
+    const res  = await fetch('/api/user');
+    const data = await res.json();
+    if (data.user) {
+      const { username, avatar } = data.user;
+      // Hide login button, show profile
+      document.getElementById('loginBtn').style.display    = 'none';
+      const profile = document.getElementById('userProfile');
+      profile.style.display = 'flex';
+      document.getElementById('userAvatar').src            = avatar;
+      document.getElementById('userName').textContent      = username;
+    }
+  } catch (_) {
+    // Backend not running — static-only mode, login button stays visible
+  }
+})();
+
 /* ===== DATA ===== */
 const CASES = [
   { id:1, name:'Изумрудный Дракон', price:399, emoji:'🐉', badge:'HOT', opens:48085, rarity:'legendary' },
