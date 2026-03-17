@@ -365,7 +365,6 @@ document.getElementById('urAgainBtn').addEventListener('click', () => {
   if (selectedSkin) updateUpgradeTarget();
 });
 document.getElementById('urSellBtn').addEventListener('click', () => {
-  const price = parseInt(document.getElementById('urPrice').textContent);
   showNotification('💰 Продано! +' + document.getElementById('urPrice').textContent);
   document.getElementById('upgradeResult').classList.add('hidden');
   document.getElementById('upgradeBtn').classList.remove('hidden');
@@ -501,7 +500,7 @@ function getAvatar(name) {
 
 /* ===== ROULETTE PAGE ===== */
 (function buildRoulette() {
-  const CELL_W   = 72; // 64px cell + 4px gap on each side = 72px stride
+  const CELL_W   = 68; // 64px cell + 4px gap = 68px stride
   const TOTAL    = 300; // enough cells so any offset stays in bounds
   // 15 red, 15 black, 2 green per 32 pattern (≈ real CS roulette odds)
   const SEQ  = ['r','r','b','b','r','b','r','b','b','r','b','r','b','r','b','g',
@@ -736,8 +735,13 @@ function spinCase() {
   const targetOffset = 106 * 33 - spinnerWidth / 2 + 50;
   const jitter = (Math.random() - 0.5) * 80;
 
+  // Reset to starting position without transition, then animate
+  inner.style.transition = 'none';
+  inner.style.transform  = 'translateX(0)';
+  // Force layout reflow so the reset is painted before the animation begins
+  void inner.offsetWidth;
   inner.style.transition = 'transform 5s cubic-bezier(0.05, 0.9, 0.1, 1)';
-  inner.style.transform = `translateX(-${targetOffset + jitter}px)`;
+  inner.style.transform  = `translateX(-${Math.max(0, targetOffset + jitter)}px)`;
 
   setTimeout(() => {
     openBtn.disabled = false;
@@ -796,8 +800,16 @@ notifStyle.textContent = `
 document.head.appendChild(notifStyle);
 
 /* ===== DEMO BALANCE ===== */
-document.getElementById('loginBtn').addEventListener('click', () => {
-  document.getElementById('loginBtn').textContent = 'ПРОФИЛЬ';
-  document.getElementById('balance').textContent = '1 000 G';
-  showNotification('Добро пожаловать, Игрок! +1000 G бонус');
+// In static/demo mode the server is not running, so /auth/steam returns a 404.
+// Intercept the click only when there is no active session (loginBtn still visible)
+// to show a demo notification without navigating away or corrupting the button HTML.
+document.getElementById('loginBtn').addEventListener('click', e => {
+  // Only intercept if we are in static mode (no server).
+  // We detect this by checking if the fetch to /api/user already failed (authChecked flag).
+  if (window._staticMode) {
+    e.preventDefault();
+    document.getElementById('balance').textContent = '1 000 G';
+    showNotification('Добро пожаловать, Игрок! +1000 G бонус');
+  }
+  // If server is running, let the href navigate normally to /auth/steam
 });
