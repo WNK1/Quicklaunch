@@ -1,19 +1,25 @@
 /* ===== STEAM AUTH ===== */
 (async function checkAuth() {
   try {
-    const res  = await fetch('/api/user');
+    const res = await fetch('/api/user');
+    if (!res.ok) {
+      // Server returned an error status — treat as static mode
+      window._staticMode = true;
+      return;
+    }
     const data = await res.json();
     if (data.user) {
       const { username, avatar } = data.user;
       // Hide login button, show profile
-      document.getElementById('loginBtn').style.display    = 'none';
+      document.getElementById('loginBtn').style.display = 'none';
       const profile = document.getElementById('userProfile');
       profile.style.display = 'flex';
-      document.getElementById('userAvatar').src            = avatar;
-      document.getElementById('userName').textContent      = username;
+      document.getElementById('userAvatar').src         = avatar;
+      document.getElementById('userName').textContent   = username;
     }
   } catch (_) {
     // Backend not running — static-only mode, login button stays visible
+    window._staticMode = true;
   }
 })();
 
@@ -91,7 +97,13 @@ document.querySelectorAll('.nav-link').forEach(link => {
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
     link.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
+    const pageEl = document.getElementById('page-' + page);
+    if (pageEl) pageEl.classList.add('active');
+    // Stop roulette countdown when navigating away from roulette page
+    if (page !== 'roulette' && window._rouletteCountdown) {
+      clearInterval(window._rouletteCountdown);
+      window._rouletteCountdown = null;
+    }
   });
 });
 
@@ -547,20 +559,20 @@ function getAvatar(name) {
 
   let spinning   = false;
   let betColor   = null;
-  let countdown  = null;
   let timeLeft   = 15;
   const timerEl  = document.getElementById('rouletteTimer');
   const timerBar = document.getElementById('rouletteTimerBar');
 
   function startCountdown() {
     timeLeft = 15;
-    clearInterval(countdown);
+    if (window._rouletteCountdown) clearInterval(window._rouletteCountdown);
     updateTimerUI();
-    countdown = setInterval(() => {
+    window._rouletteCountdown = setInterval(() => {
       timeLeft--;
       updateTimerUI();
       if (timeLeft <= 0) {
-        clearInterval(countdown);
+        clearInterval(window._rouletteCountdown);
+        window._rouletteCountdown = null;
         doSpin();
       }
     }, 1000);

@@ -39,6 +39,7 @@ app.use(session({
   cookie: {
     secure:   process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: 'lax',
     maxAge:   7 * 24 * 60 * 60 * 1000, // 7 days
   },
 }));
@@ -80,8 +81,16 @@ app.get('/api/user', (req, res) => {
   }
 });
 
+/* ── Global error handler ──────────────────────────────────────── */
+// Must be defined after all routes; 4-argument signature is required by Express
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, _next) => {
+  console.error(err.stack || err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 /* ── Start ─────────────────────────────────────────────────────── */
 app.listen(PORT, () => {
-  console.log(`\n  ✅  CSDROP server running at ${SITE_URL}`);
-  console.log(`  🔑  Steam login: ${SITE_URL}/auth/steam\n`);
+  console.log(`\n  CSDROP server running at ${SITE_URL}`);
+  console.log(`  Steam login: ${SITE_URL}/auth/steam\n`);
 });
